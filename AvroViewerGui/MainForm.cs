@@ -1,21 +1,22 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Windows.Forms;
-using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.Hadoop.Avro;
 using Microsoft.Hadoop.Avro.Container;
 using Microsoft.Hadoop.Avro.Schema;
-using Timer = System.Windows.Forms.Timer;
 using MsCommon.ClickOnce;
 using Newtonsoft.Json;
-using System.Text.RegularExpressions;
+
+#endregion
 
 namespace AvroViewerGui
 {
@@ -23,14 +24,14 @@ namespace AvroViewerGui
     {
         private static readonly string Version = "v" + AppVersion.GetVersion();
 
-        private string[] _loadedColumns = null;
-        private string[][] _loadedRows = null;
-        private string[][] _filteredRows = null;
-        private string _initialFilename = null;
+        private string[] _loadedColumns;
+        private string[][] _loadedRows;
+        private string[][] _filteredRows;
+        private readonly string _initialFilename;
 
-        private bool _abortClicked = false;
+        private bool _abortClicked;
 
-        private Timer delayedFilterTextChangedTimer;
+        private readonly Timer delayedFilterTextChangedTimer;
 
         public MainForm(string filename = null)
         {
@@ -40,11 +41,11 @@ namespace AvroViewerGui
             dataGridView1.MultiSelect = true;
             dataGridView1.CellDoubleClick += HandleCellDoubleClick;
             typeof(DataGridView).InvokeMember(
-               "DoubleBuffered",
-               BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
-               null,
-               dataGridView1,
-               new object[] { true });
+                "DoubleBuffered",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
+                null,
+                dataGridView1,
+                new object[] { true });
 
             // Filter textbox
             filterTextBox.GotFocus += HandleFilterGotFocus;
@@ -65,7 +66,7 @@ namespace AvroViewerGui
 
         #region Filter textbox
 
-        private static string FilterText = "type to filter";
+        private static readonly string FilterText = "type to filter";
 
         void HandleFilterGotFocus(object sender, EventArgs e)
         {
@@ -73,7 +74,7 @@ namespace AvroViewerGui
             {
                 filterTextBox.Text = "";
                 //filterTextBox.Font = new Font(TextBox.DefaultFont, FontStyle.Regular);
-                filterTextBox.ForeColor = TextBox.DefaultForeColor;
+                filterTextBox.ForeColor = DefaultForeColor;
             }
         }
 
@@ -125,14 +126,15 @@ namespace AvroViewerGui
                 searchterms = searchterms.Where(s => !s.StartsWith("#")).ToArray(); // niet filteren op highlight terms
                 _filteredRows = (from row in _loadedRows
                     where searchterms.Where(s => !s.StartsWith("!")).All(s => row.Any(r => r.ToLower().Contains(s))) &&
-                          searchterms.Where(s => s.StartsWith("!")).All(s => row.All(r => !r.ToLower().Contains(s.TrimStart('!'))))
+                          searchterms.Where(s => s.StartsWith("!"))
+                              .All(s => row.All(r => !r.ToLower().Contains(s.TrimStart('!'))))
                     select row).ToArray();
             }
 
             // Always show at least one record. When there are no results, add a dummy. If we don't do this, the
             // grid won't be usable anymore.
             if (_filteredRows.Length == 0)
-                _filteredRows = new string[][] {Enumerable.Repeat("No result", _loadedColumns.Length).ToArray()};
+                _filteredRows = new[] { Enumerable.Repeat("No result", _loadedColumns.Length).ToArray() };
 
             // Only update the rowcount if it changes, as this is a fairly expensive operation
             if (_filteredRows.Length != dataGridView1.RowCount)
@@ -140,6 +142,7 @@ namespace AvroViewerGui
                 dataGridView1.Rows.Clear();
                 dataGridView1.RowCount = _filteredRows.Length;
             }
+
             dataGridView1.Invalidate();
         }
 
@@ -239,6 +242,7 @@ namespace AvroViewerGui
                     }
                 }
             }
+
             return entities;
         }
 
@@ -277,7 +281,8 @@ namespace AvroViewerGui
                         }
                         else
                         {
-                            ent.Properties.Add(GetFieldName(field, prefix) + "." + kvp.Key, kvp.Value?.ToString() ?? "null");
+                            ent.Properties.Add(GetFieldName(field, prefix) + "." + kvp.Key,
+                                kvp.Value?.ToString() ?? "null");
                         }
                     }
                 }
@@ -294,7 +299,8 @@ namespace AvroViewerGui
                     }
                     catch (Exception)
                     {
-                        ent.Properties.Add(GetFieldName(field, prefix), "Could not create json representation for: " + dataobj?.ToString() ?? "null");
+                        ent.Properties.Add(GetFieldName(field, prefix),
+                            "Could not create json representation for: " + dataobj ?? "null");
                     }
                 }
                 else
@@ -321,57 +327,61 @@ namespace AvroViewerGui
             statusStrip1.Visible = true;
             Text = AppVersion.AppName + " " + Version + " - " + Path.GetFileName(filename);
             PerformWork(() =>
-            {
-                // Load from file
-                UpdateStatus("Loading...");
-                _abortClicked = false;
-                var entities = GetEntities(filename);
-
-                // If there are no entities at all, add a dummy "no results" entity
-                if (entities.Count == 0)
                 {
-                    entities.Add(new Entity
+                    // Load from file
+                    UpdateStatus("Loading...");
+                    _abortClicked = false;
+                    var entities = GetEntities(filename);
+
+                    // If there are no entities at all, add a dummy "no results" entity
+                    if (entities.Count == 0)
                     {
-                        Properties = new Dictionary<string, string>()
+                        entities.Add(new Entity
                         {
-                            { "Message", "No record in file found." }
-                        }
-                    });
-                }
+                            Properties = new Dictionary<string, string>
+                            {
+                                { "Message", "No record in file found." }
+                            }
+                        });
+                    }
 
-                if (_abortClicked)
-                    UpdateStatus("Interrupted, processing what was read so far...");
-                else
-                    UpdateStatus("Processing...");
+                    if (_abortClicked)
+                        UpdateStatus("Interrupted, processing what was read so far...");
+                    else
+                        UpdateStatus("Processing...");
 
-                // Determine the available property names by checking each entity
-                string[] propertyNames = entities.SelectMany(entity => entity.Properties).Select(p => p.Key).Distinct().ToArray();
+                    // Determine the available property names by checking each entity
+                    string[] propertyNames = entities.SelectMany(entity => entity.Properties).Select(p => p.Key)
+                        .Distinct().ToArray();
 
-                _loadedColumns = new[] { "LineNumber" }.Concat(propertyNames).ToArray();
-                _loadedRows = entities
-                    .Select(entity => new[] { entity.LineNumber.ToString() }.Concat(propertyNames
-                        .Select(propName => entity.Properties.ContainsKey(propName) ? entity.Properties[propName] : string.Empty))
-                        .ToArray())
-                    .ToArray();
-                _filteredRows = _loadedRows;
-            },
-            () =>
-            {
-                UpdateStatus("Rendering table...");
-                Application.DoEvents();
-                ShowDataGridView();
-                statusStrip1.Visible = false;
-
-                // Dirty fix to get the horizontal scrollbar active after loading a file.
-                Task.Factory.StartNew(async () =>
+                    _loadedColumns = new[] { "LineNumber" }.Concat(propertyNames).ToArray();
+                    _loadedRows = entities
+                        .Select(entity => new[] { entity.LineNumber.ToString() }.Concat(propertyNames
+                                .Select(propName =>
+                                    entity.Properties.ContainsKey(propName)
+                                        ? entity.Properties[propName]
+                                        : string.Empty))
+                            .ToArray())
+                        .ToArray();
+                    _filteredRows = _loadedRows;
+                },
+                () =>
                 {
-                    Invoke(new Action(() => {
-                        Width += 1;
-                        Width -= 1;
-                    }), null);
-                    
+                    UpdateStatus("Rendering table...");
+                    Application.DoEvents();
+                    ShowDataGridView();
+                    statusStrip1.Visible = false;
+
+                    // Dirty fix to get the horizontal scrollbar active after loading a file.
+                    Task.Factory.StartNew(async () =>
+                    {
+                        Invoke(new Action(() =>
+                        {
+                            Width += 1;
+                            Width -= 1;
+                        }), null);
+                    });
                 });
-            });
         }
 
         private void UpdateStatus(string newmessage)
@@ -381,6 +391,7 @@ namespace AvroViewerGui
                 Invoke((Action<string>)UpdateStatus, newmessage);
                 return;
             }
+
             lblStatus.Text = newmessage;
         }
 
@@ -401,6 +412,7 @@ namespace AvroViewerGui
                 dataGridView1.CellValueNeeded += HandleCellValueNeeded;
                 dataGridView1.CellFormatting += HandleCellFormatting;
             }
+
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.AllowUserToDeleteRows = false;
             dataGridView1.AllowUserToResizeColumns = true; // Resizen mag wel
@@ -413,14 +425,18 @@ namespace AvroViewerGui
             // Create columns and determine width of each column
             using (var gfx = dataGridView1.CreateGraphics())
             {
-                for (int i=0; i < _loadedColumns.Length; i++)
+                for (int i = 0; i < _loadedColumns.Length; i++)
                 {
                     var columnname = _loadedColumns[i];
-                    var longestcontent = (from item in _loadedRows select i < item.Length ? item[i] : "").Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur);
-                    var cleantext = Regex.Replace(longestcontent, @"\p{C}+", string.Empty); // Remove non-printable characters that MeasureString would error on
+                    var longestcontent =
+                        (from item in _loadedRows select i < item.Length ? item[i] : "").Aggregate("",
+                            (max, cur) => max.Length > cur.Length ? max : cur);
+                    var cleantext =
+                        Regex.Replace(longestcontent, @"\p{C}+",
+                            string.Empty); // Remove non-printable characters that MeasureString would error on
                     var colWidth = gfx.MeasureString(cleantext, dataGridView1.Font);
 
-                    var size = (int) Math.Ceiling(colWidth.Width);
+                    var size = (int)Math.Ceiling(colWidth.Width);
                     size += 20;
 
                     // Force a maximum size for a column
@@ -463,13 +479,13 @@ namespace AvroViewerGui
             string[] row = _filteredRows[rowindex];
             if (columnindex < row.Length)
                 return row[columnindex] ?? "";
-            else
-                return "";
+            return "";
         }
 
         void HandleCellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            string[] highlightterms = (GetFilterTextSearchTerms() ?? new string[0]).Where(s => s.StartsWith("#")).Select(s => s.TrimStart('#')).ToArray();
+            string[] highlightterms = (GetFilterTextSearchTerms() ?? new string[0]).Where(s => s.StartsWith("#"))
+                .Select(s => s.TrimStart('#')).ToArray();
             Color originalcolor = Color.FromKnownColor(KnownColor.Window);
 
             // Geen highlightterms, default color dus
@@ -480,6 +496,7 @@ namespace AvroViewerGui
                     e.CellStyle.BackColor = originalcolor;
                     e.FormattingApplied = true;
                 }
+
                 return;
             }
 
@@ -569,7 +586,7 @@ namespace AvroViewerGui
             var headers = dataGridView1.Columns.Cast<DataGridViewColumn>();
             sb.Append(string.Join(",", headers.Select(column => "\"" + column.HeaderText + "\"")));
             sb.AppendLine();
-            if (selected == true)
+            if (selected)
             {
                 foreach (DataGridViewRow row in dataGridView1.SelectedRows)
                 {
@@ -652,13 +669,17 @@ namespace AvroViewerGui
 
             if (!int.TryParse(dataGridView1[0, 0].Value as string, out startValue))
             {
-                MessageBox.Show(this, "Unexpected value in first column. Not a number.", $"I'm sorry, {Environment.UserName}. I'm afraid I can't do that.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "Unexpected value in first column. Not a number.",
+                    $"I'm sorry, {Environment.UserName}. I'm afraid I can't do that.", MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
                 return;
             }
 
             if (!int.TryParse(dataGridView1[0, dataGridView1.RowCount - 1].Value as string, out endValue))
             {
-                MessageBox.Show(this, "Unexpected value in first column. Not a number.", $"I'm sorry, {Environment.UserName}. I'm afraid I can't do that.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "Unexpected value in first column. Not a number.",
+                    $"I'm sorry, {Environment.UserName}. I'm afraid I can't do that.", MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
                 return;
             }
 
@@ -748,15 +769,19 @@ namespace AvroViewerGui
             // Minimum of 1 row?
             if (rows.Count() == 0)
             {
-                MessageBox.Show(this, "At least one row must be in the export.", "Yikes!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "At least one row must be in the export.", "Yikes!", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
                 return;
             }
 
             // Find column index
-            var bodycolumn = rows.First().DataGridView.Columns.Cast<DataGridViewColumn>().FirstOrDefault(dgvc => dgvc.HeaderText.ToLower() == "body");
+            var bodycolumn = rows.First().DataGridView.Columns.Cast<DataGridViewColumn>()
+                .FirstOrDefault(dgvc => dgvc.HeaderText.ToLower() == "body");
             if (bodycolumn == null)
             {
-                MessageBox.Show(this, "Cannot find column named \"Body\". This export was created with IoT Hub's .avro exported files in mind.", "Yikes!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this,
+                    "Cannot find column named \"Body\". This export was created with IoT Hub's .avro exported files in mind.",
+                    "Yikes!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -774,7 +799,8 @@ Select ""NO"" (New-line separated JSON objects) for:
 { object }
 
 Note that this export assumes the ""Body"" is a valid JSON object.";
-            var res = MessageBox.Show(this, text, "JSON Export Type?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
+            var res = MessageBox.Show(this, text, "JSON Export Type?", MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
             if (res == DialogResult.Cancel)
                 return;
 
@@ -796,6 +822,7 @@ Note that this export assumes the ""Body"" is a valid JSON object.";
                 {
                     outfile.WriteLine("[");
                 }
+
                 bool first = true;
                 foreach (var row in rows)
                 {
@@ -804,6 +831,7 @@ Note that this export assumes the ""Body"" is a valid JSON object.";
                     outfile.WriteLine(row.Cells[bodycolumn.Index].Value + "");
                     first = false;
                 }
+
                 if (asJsonArray)
                 {
                     outfile.WriteLine("]");

@@ -1,12 +1,13 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Specialized;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows.Forms;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -19,8 +20,8 @@ namespace MsCommon.ClickOnce
         public FeedbackForm()
         {
             InitializeComponent();
-            this.AcceptButton = btnSubmit;
-            this.CancelButton = btnCancel;
+            AcceptButton = btnSubmit;
+            CancelButton = btnCancel;
             if (string.IsNullOrEmpty(FeedbackEndpoint))
                 throw new ApplicationException("Programmers error: FeedbackEndpoint is not set");
         }
@@ -86,7 +87,8 @@ namespace MsCommon.ClickOnce
                 lblStatus.Invoke((Action<Color, string>)UpdateStatus, c, status);
                 return;
             }
-            lblStatus.Font = new Font(Label.DefaultFont, FontStyle.Bold);
+
+            lblStatus.Font = new Font(DefaultFont, FontStyle.Bold);
             lblStatus.ForeColor = c;
             lblStatus.Text = status;
         }
@@ -96,10 +98,10 @@ namespace MsCommon.ClickOnce
             if (tbMessage.ReadOnly)
                 return;
 
-            pbHappy.BackColor = Control.DefaultBackColor;
+            pbHappy.BackColor = DefaultBackColor;
             pbHappy.BorderStyle = BorderStyle.None;
             rbHappy.Checked = false;
-            pbSad.BackColor = Control.DefaultBackColor;
+            pbSad.BackColor = DefaultBackColor;
             pbSad.BorderStyle = BorderStyle.None;
             rbSad.Checked = false;
 

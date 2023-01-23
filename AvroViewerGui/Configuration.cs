@@ -1,15 +1,14 @@
-﻿using MsCommon.ClickOnce;
+﻿#region
+
 using System;
-using System.Collections.Generic;
-using System.Xml.Serialization;
+using MsCommon.ClickOnce;
+
+#endregion
 
 namespace AvroViewerGui
 {
     [Serializable]
     public class Configuration : AppConfiguration<Configuration>
     {
-        public Configuration()
-        {
-        }
     }
 }

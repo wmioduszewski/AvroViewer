@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿#region
+
 using System;
 using System.Deployment.Application;
 using System.Drawing;
@@ -8,7 +9,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ApplicationDeployment = System.Deployment.Application.ApplicationDeployment;
+using log4net;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -27,6 +30,7 @@ namespace MsCommon.ClickOnce
             {
                 return ToVersionString(ApplicationDeployment.CurrentDeployment.CurrentVersion);
             }
+
             return "0.0.0.0";
         }
 
@@ -49,7 +53,8 @@ namespace MsCommon.ClickOnce
                 }
                 else
                 {
-                    Logger.Warn("The application is running standalone instead of using ClickOnce. Automatic updates are therefore not available. Consider updating the shortcut you use to start the application!");
+                    Logger.Warn(
+                        "The application is running standalone instead of using ClickOnce. Automatic updates are therefore not available. Consider updating the shortcut you use to start the application!");
                 }
             });
         }
@@ -62,7 +67,8 @@ namespace MsCommon.ClickOnce
                 ApplicationDeployment.CurrentDeployment.Update();
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine("An update was found and installed. The application needs to be restarted to use the new version.");
+                sb.AppendLine(
+                    "An update was found and installed. The application needs to be restarted to use the new version.");
                 sb.AppendLine();
                 sb.AppendLine("Current version: " + GetVersion());
                 sb.AppendLine("New version: " + ToVersionString(e.AvailableVersion));
@@ -74,8 +80,10 @@ namespace MsCommon.ClickOnce
                 Form form = Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null;
                 if (form != null)
                 {
-                    form.Invoke((Action)(() => {
-                        if (MessageBox.Show(form, sb.ToString(), "Update available!", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    form.Invoke((Action)(() =>
+                    {
+                        if (MessageBox.Show(form, sb.ToString(), "Update available!", MessageBoxButtons.YesNo) ==
+                            DialogResult.Yes)
                             Application.Restart();
                     }));
                 }
@@ -86,7 +94,7 @@ namespace MsCommon.ClickOnce
             }
         }
 
-        private static string ToVersionString(System.Version version)
+        private static string ToVersionString(Version version)
         {
             return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
         }
@@ -99,7 +107,8 @@ namespace MsCommon.ClickOnce
         public static void DisplayChanges()
         {
             string changes = string.Empty;
-            using (Stream s = Assembly.GetEntryAssembly().GetManifestResourceStream(Assembly.GetEntryAssembly().GetManifestResourceNames().First(e => e.ToLower().Contains("changes.txt"))))
+            using (Stream s = Assembly.GetEntryAssembly().GetManifestResourceStream(Assembly.GetEntryAssembly()
+                       .GetManifestResourceNames().First(e => e.ToLower().Contains("changes.txt"))))
             {
                 using (StreamReader sr = new StreamReader(s))
                 {
@@ -110,10 +119,7 @@ namespace MsCommon.ClickOnce
             Button b = new Button();
             b.Text = "Close";
             b.Dock = DockStyle.Bottom;
-            b.Click += (src, evt) =>
-            {
-                ((Form)b.Parent).Close();
-            };
+            b.Click += (src, evt) => { ((Form)b.Parent).Close(); };
 
             TextBox tb = new TextBox();
             tb.Text = changes;

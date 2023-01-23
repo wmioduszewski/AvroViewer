@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿#region
+
+using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Runtime.CompilerServices;
-using System.IO;
 using log4net;
-using System.Threading;
 using MsCommon.ClickOnce.Extensions;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -24,7 +22,8 @@ namespace MsCommon.ClickOnce
             InitializeComponent();
         }
 
-        protected void LogMethodEntry([CallerFilePath] string file = "", [CallerMemberName] string member = "", [CallerLineNumber] int line = 0)
+        protected void LogMethodEntry([CallerFilePath] string file = "", [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0)
         {
             Logger.DebugFormat("=> {0}.{1}:{2}", Path.GetFileNameWithoutExtension(file), member, line);
         }
@@ -45,6 +44,7 @@ namespace MsCommon.ClickOnce
                 {
                     exception = ex;
                 }
+
                 Invoke((Action)(() =>
                 {
                     if (exception != null)
@@ -56,6 +56,7 @@ namespace MsCommon.ClickOnce
                         this.SetBusy(false);
                         return;
                     }
+
                     try
                     {
                         if (fgwork != null)
@@ -73,7 +74,8 @@ namespace MsCommon.ClickOnce
             }).Start();
         }
 
-        public async Task PerformWorkAsyncOld(Func<Task> bgwork, Func<Task> fgwork, Action<Exception> customErrorHandler = null)
+        public async Task PerformWorkAsyncOld(Func<Task> bgwork, Func<Task> fgwork,
+            Action<Exception> customErrorHandler = null)
         {
             this.SetBusy(true);
             await Task.Factory.StartNew(async () =>
@@ -88,6 +90,7 @@ namespace MsCommon.ClickOnce
                 {
                     exception = ex;
                 }
+
                 Invoke((Func<Task>)(async () =>
                 {
                     if (exception != null)
@@ -99,6 +102,7 @@ namespace MsCommon.ClickOnce
                         this.SetBusy(false);
                         return;
                     }
+
                     try
                     {
                         if (fgwork != null)
@@ -116,27 +120,25 @@ namespace MsCommon.ClickOnce
             });
         }
 
-        public async Task PerformWorkAsync(Func<Task> bgwork, Func<Task> fgwork, Action<Exception> customErrorHandler = null)
+        public async Task PerformWorkAsync(Func<Task> bgwork, Func<Task> fgwork,
+            Action<Exception> customErrorHandler = null)
         {
             this.SetBusy(true);
             try
             {
-
                 Exception exception = null;
                 try
                 {
                     if (bgwork != null)
                     {
-                        await Task.Factory.StartNew(async () =>
-                        {
-                            await bgwork();
-                        });
+                        await Task.Factory.StartNew(async () => { await bgwork(); });
                     }
                 }
                 catch (Exception ex)
                 {
                     exception = ex;
                 }
+
                 if (exception != null)
                 {
                     if (customErrorHandler != null)
@@ -163,6 +165,5 @@ namespace MsCommon.ClickOnce
         }
 
         #endregion
-
     }
 }

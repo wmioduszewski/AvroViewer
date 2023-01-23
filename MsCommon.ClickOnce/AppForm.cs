@@ -1,18 +1,21 @@
-﻿using log4net;
-using log4net.Appender;
-using log4net.Core;
-using log4net.Repository.Hierarchy;
-using MsCommon.ClickOnce.Extensions;
+﻿#region
+
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using log4net;
+using log4net.Appender;
+using log4net.Core;
+using log4net.Repository.Hierarchy;
+using MsCommon.ClickOnce.Extensions;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -20,7 +23,7 @@ namespace MsCommon.ClickOnce
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(AppForm));
 
-        private System.ComponentModel.IContainer components;
+        private IContainer components;
         private ContextMenuStrip lbLogContextMenuStrip;
         private ToolStripMenuItem copyToolStripMenuItem;
         private ContextMenuStrip contextMenuStrip1;
@@ -31,10 +34,11 @@ namespace MsCommon.ClickOnce
         public AppForm()
         {
             InitializeComponent();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(GetType());
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            ComponentResourceManager resources =
+                new ComponentResourceManager(GetType());
+            Icon = ((Icon)(resources.GetObject("$this.Icon")));
             ((Hierarchy)LogManager.GetRepository()).Root.AddAppender(this);
-            this.Load += HandleAppFormLoad;
+            Load += HandleAppFormLoad;
         }
 
         private void HandleAppFormLoad(object sender, EventArgs e)
@@ -59,6 +63,7 @@ namespace MsCommon.ClickOnce
                 {
                     exception = ex;
                 }
+
                 Invoke((Action)(() =>
                 {
                     if (exception != null)
@@ -70,6 +75,7 @@ namespace MsCommon.ClickOnce
                         this.SetBusy(false);
                         return;
                     }
+
                     try
                     {
                         if (fgwork != null)
@@ -88,7 +94,8 @@ namespace MsCommon.ClickOnce
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task PerformWorkAsync(Func<Task> bgwork, Func<Task> fgwork, Action<Exception> customErrorHandler = null)
+        public async Task PerformWorkAsync(Func<Task> bgwork, Func<Task> fgwork,
+            Action<Exception> customErrorHandler = null)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             this.SetBusy(true);
@@ -104,6 +111,7 @@ namespace MsCommon.ClickOnce
                 {
                     exception = ex;
                 }
+
                 Delegate method = (Func<Task>)(async () =>
                 {
                     if (exception != null)
@@ -115,6 +123,7 @@ namespace MsCommon.ClickOnce
                         this.SetBusy(false);
                         return;
                     }
+
                     try
                     {
                         if (fgwork != null)
@@ -140,8 +149,8 @@ namespace MsCommon.ClickOnce
 
         #region Logging
 
-        private string _LastLogMessage = null;
-        private int _LastLogMessageCount = 0;
+        private string _LastLogMessage;
+        private int _LastLogMessageCount;
 
         protected void SetLoggingListBox(ListBox loggingListBox)
         {
@@ -228,9 +237,9 @@ namespace MsCommon.ClickOnce
         /// </summary>
         public static Color ChangeColorBrightness(Color color, float correctionFactor)
         {
-            float red = (float)color.R;
-            float green = (float)color.G;
-            float blue = (float)color.B;
+            float red = color.R;
+            float green = color.G;
+            float blue = color.B;
 
             if (correctionFactor < 0)
             {
@@ -253,7 +262,11 @@ namespace MsCommon.ClickOnce
         {
             if (loggingEvent.Level >= Level.Info)
             {
-                AddToLog(new LogItem { TimeStamp = loggingEvent.TimeStamp, Level = loggingEvent.Level, Message = loggingEvent.RenderedMessage });
+                AddToLog(new LogItem
+                {
+                    TimeStamp = loggingEvent.TimeStamp, Level = loggingEvent.Level,
+                    Message = loggingEvent.RenderedMessage
+                });
             }
         }
 
@@ -270,7 +283,7 @@ namespace MsCommon.ClickOnce
 
             public string ToStringWithLevel()
             {
-                return string.Format("{0} [{2}] {1}", TimeStamp.ToString("HH:mm:ss"), Message, Level.ToString());
+                return string.Format("{0} [{2}] {1}", TimeStamp.ToString("HH:mm:ss"), Message, Level);
             }
         }
 
@@ -296,7 +309,8 @@ namespace MsCommon.ClickOnce
             lbLog.Items.Clear();
         }
 
-        protected void LogMethodEntry([CallerFilePath] string file = "", [CallerMemberName] string member = "", [CallerLineNumber] int line = 0)
+        protected void LogMethodEntry([CallerFilePath] string file = "", [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0)
         {
             Logger.DebugFormat("=> {0}.{1}:{2}", Path.GetFileNameWithoutExtension(file), member, line);
         }
@@ -305,55 +319,56 @@ namespace MsCommon.ClickOnce
 
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.lbLogContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.lbLogContextMenuStrip.SuspendLayout();
-            this.SuspendLayout();
+            components = new Container();
+            lbLogContextMenuStrip = new ContextMenuStrip(components);
+            copyToolStripMenuItem = new ToolStripMenuItem();
+            contextMenuStrip1 = new ContextMenuStrip(components);
+            clearToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            lbLogContextMenuStrip.SuspendLayout();
+            SuspendLayout();
             // 
             // lbLogContextMenuStrip
             // 
-            this.lbLogContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.copyToolStripMenuItem,
-            this.toolStripSeparator1,
-            this.clearToolStripMenuItem});
-            this.lbLogContextMenuStrip.Name = "lbLogContextMenuStrip";
-            this.lbLogContextMenuStrip.Size = new System.Drawing.Size(153, 76);
+            lbLogContextMenuStrip.Items.AddRange(new ToolStripItem[]
+            {
+                copyToolStripMenuItem,
+                toolStripSeparator1,
+                clearToolStripMenuItem
+            });
+            lbLogContextMenuStrip.Name = "lbLogContextMenuStrip";
+            lbLogContextMenuStrip.Size = new Size(153, 76);
             // 
             // copyToolStripMenuItem
             // 
-            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.copyToolStripMenuItem.Text = "Copy";
-            this.copyToolStripMenuItem.Click += new System.EventHandler(this.HandleLogCopyClicked);
+            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            copyToolStripMenuItem.Size = new Size(152, 22);
+            copyToolStripMenuItem.Text = "Copy";
+            copyToolStripMenuItem.Click += HandleLogCopyClicked;
             // 
             // contextMenuStrip1
             // 
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
+            contextMenuStrip1.Name = "contextMenuStrip1";
+            contextMenuStrip1.Size = new Size(61, 4);
             // 
             // clearToolStripMenuItem
             // 
-            this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
-            this.clearToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.clearToolStripMenuItem.Text = "Clear";
-            this.clearToolStripMenuItem.Click += new System.EventHandler(this.HandleLogClearClicked);
+            clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            clearToolStripMenuItem.Size = new Size(152, 22);
+            clearToolStripMenuItem.Text = "Clear";
+            clearToolStripMenuItem.Click += HandleLogClearClicked;
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(149, 6);
             // 
             // AppForm
             // 
-            this.ClientSize = new System.Drawing.Size(284, 261);
-            this.Name = "AppForm";
-            this.lbLogContextMenuStrip.ResumeLayout(false);
-            this.ResumeLayout(false);
-
+            ClientSize = new Size(284, 261);
+            Name = "AppForm";
+            lbLogContextMenuStrip.ResumeLayout(false);
+            ResumeLayout(false);
         }
     }
 }

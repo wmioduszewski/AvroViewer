@@ -1,19 +1,28 @@
-﻿using System;
+﻿#region
+
+using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
-using System.Collections.Generic;
 
-[Serializable()]
+#endregion
+
+[Serializable]
 public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSerializable, ISerializable
 {
     #region Constants
+
     private const string DictionaryNodeName = "Dictionary";
     private const string ItemNodeName = "Item";
     private const string KeyNodeName = "Key";
     private const string ValueNodeName = "Value";
+
     #endregion
+
     #region Constructors
+
     public SerializableDictionary()
     {
     }
@@ -44,6 +53,7 @@ public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSe
     }
 
     #endregion
+
     #region ISerializable Members
 
     protected SerializableDictionary(SerializationInfo info, StreamingContext context)
@@ -51,14 +61,15 @@ public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSe
         int itemCount = info.GetInt32("ItemCount");
         for (int i = 0; i < itemCount; i++)
         {
-            KeyValuePair<TKey, TVal> kvp = (KeyValuePair<TKey, TVal>)info.GetValue(String.Format("Item{0}", i), typeof(KeyValuePair<TKey, TVal>));
-            this.Add(kvp.Key, kvp.Value);
+            KeyValuePair<TKey, TVal> kvp =
+                (KeyValuePair<TKey, TVal>)info.GetValue(String.Format("Item{0}", i), typeof(KeyValuePair<TKey, TVal>));
+            Add(kvp.Key, kvp.Value);
         }
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        info.AddValue("ItemCount", this.Count);
+        info.AddValue("ItemCount", Count);
         int itemIdx = 0;
         foreach (KeyValuePair<TKey, TVal> kvp in this)
         {
@@ -68,9 +79,10 @@ public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSe
     }
 
     #endregion
+
     #region IXmlSerializable Members
 
-    void IXmlSerializable.WriteXml(System.Xml.XmlWriter writer)
+    void IXmlSerializable.WriteXml(XmlWriter writer)
     {
         //writer.WriteStartElement(DictionaryNodeName);
         foreach (KeyValuePair<TKey, TVal> kvp in this)
@@ -87,7 +99,7 @@ public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSe
         //writer.WriteEndElement();
     }
 
-    void IXmlSerializable.ReadXml(System.Xml.XmlReader reader)
+    void IXmlSerializable.ReadXml(XmlReader reader)
     {
         if (reader.IsEmptyElement)
         {
@@ -111,7 +123,7 @@ public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSe
             TVal value = (TVal)ValueSerializer.Deserialize(reader);
             reader.ReadEndElement();
             reader.ReadEndElement();
-            this.Add(key, value);
+            Add(key, value);
             reader.MoveToContent();
         }
         //reader.ReadEndElement();
@@ -119,13 +131,15 @@ public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSe
         reader.ReadEndElement(); // Read End Element to close Read of containing node
     }
 
-    System.Xml.Schema.XmlSchema IXmlSerializable.GetSchema()
+    XmlSchema IXmlSerializable.GetSchema()
     {
         return null;
     }
 
     #endregion
+
     #region Private Properties
+
     protected XmlSerializer ValueSerializer
     {
         get
@@ -134,6 +148,7 @@ public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSe
             {
                 valueSerializer = new XmlSerializer(typeof(TVal));
             }
+
             return valueSerializer;
         }
     }
@@ -146,12 +161,17 @@ public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSe
             {
                 keySerializer = new XmlSerializer(typeof(TKey));
             }
+
             return keySerializer;
         }
     }
+
     #endregion
+
     #region Private Members
-    private XmlSerializer keySerializer = null;
-    private XmlSerializer valueSerializer = null;
+
+    private XmlSerializer keySerializer;
+    private XmlSerializer valueSerializer;
+
     #endregion
 }

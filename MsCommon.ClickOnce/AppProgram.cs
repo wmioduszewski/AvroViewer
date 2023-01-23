@@ -1,7 +1,11 @@
-﻿using log4net;
+﻿#region
+
 using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using log4net;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -80,7 +84,9 @@ namespace MsCommon.ClickOnce
             }
             catch (Exception ex2)
             {
-                MessageBox.Show("Proper error handling failed (" + ex2.Message + "). Please show the following message to the developer:\r\n\r\n" + ex, "Whoops!");
+                MessageBox.Show(
+                    "Proper error handling failed (" + ex2.Message +
+                    "). Please show the following message to the developer:\r\n\r\n" + ex, "Whoops!");
             }
         }
     }

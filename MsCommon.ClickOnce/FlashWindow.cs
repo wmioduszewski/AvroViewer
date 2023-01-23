@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿#region
+
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Forms;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -20,18 +21,22 @@ namespace MsCommon.ClickOnce
             /// The size of the structure in bytes.
             /// </summary>
             public uint cbSize;
+
             /// <summary>
             /// A Handle to the Window to be Flashed. The window can be either opened or minimized.
             /// </summary>
             public IntPtr hwnd;
+
             /// <summary>
             /// The Flash Status.
             /// </summary>
             public uint dwFlags;
+
             /// <summary>
             /// The number of times to Flash the window.
             /// </summary>
             public uint uCount;
+
             /// <summary>
             /// The rate at which the Window is to be flashed, in milliseconds. If Zero, the function uses the default cursor blink rate.
             /// </summary>
@@ -75,7 +80,7 @@ namespace MsCommon.ClickOnce
         /// </summary>
         /// <param name="form">The Form (Window) to Flash.</param>
         /// <returns></returns>
-        public static bool Flash(System.Windows.Forms.Form form)
+        public static bool Flash(Form form)
         {
             // Make sure we're running under Windows 2000 or later
             if (Win2000OrLater)
@@ -83,6 +88,7 @@ namespace MsCommon.ClickOnce
                 FLASHWINFO fi = Create_FLASHWINFO(form.Handle, FLASHW_ALL | FLASHW_TIMERNOFG, uint.MaxValue, 0);
                 return FlashWindowEx(ref fi);
             }
+
             return false;
         }
 
@@ -103,13 +109,14 @@ namespace MsCommon.ClickOnce
         /// <param name="form">The Form (Window) to Flash.</param>
         /// <param name="count">The number of times to Flash.</param>
         /// <returns></returns>
-        public static bool Flash(System.Windows.Forms.Form form, uint count)
+        public static bool Flash(Form form, uint count)
         {
             if (Win2000OrLater)
             {
                 FLASHWINFO fi = Create_FLASHWINFO(form.Handle, FLASHW_ALL, count, 0);
                 return FlashWindowEx(ref fi);
             }
+
             return false;
         }
 
@@ -118,13 +125,14 @@ namespace MsCommon.ClickOnce
         /// </summary>
         /// <param name="form">The Form (Window) to Flash.</param>
         /// <returns></returns>
-        public static bool Start(System.Windows.Forms.Form form)
+        public static bool Start(Form form)
         {
             if (Win2000OrLater)
             {
                 FLASHWINFO fi = Create_FLASHWINFO(form.Handle, FLASHW_ALL, uint.MaxValue, 0);
                 return FlashWindowEx(ref fi);
             }
+
             return false;
         }
 
@@ -133,13 +141,14 @@ namespace MsCommon.ClickOnce
         /// </summary>
         /// <param name="form"></param>
         /// <returns></returns>
-        public static bool Stop(System.Windows.Forms.Form form)
+        public static bool Stop(Form form)
         {
             if (Win2000OrLater)
             {
                 FLASHWINFO fi = Create_FLASHWINFO(form.Handle, FLASHW_STOP, uint.MaxValue, 0);
                 return FlashWindowEx(ref fi);
             }
+
             return false;
         }
 
@@ -148,7 +157,7 @@ namespace MsCommon.ClickOnce
         /// </summary>
         private static bool Win2000OrLater
         {
-            get { return System.Environment.OSVersion.Version.Major >= 5; }
+            get { return Environment.OSVersion.Version.Major >= 5; }
         }
     }
 }

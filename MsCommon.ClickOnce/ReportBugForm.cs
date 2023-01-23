@@ -1,12 +1,14 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Specialized;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Windows.Forms;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -14,15 +16,16 @@ namespace MsCommon.ClickOnce
     {
         public static string ReportBugEndpoint { get; set; }
 
-        private NameValueCollection _collectedData;
+        private readonly NameValueCollection _collectedData;
 
         public ReportBugForm(Exception ex)
         {
             InitializeComponent();
             _collectedData = CollectData(ex);
-            tbReport.Text = string.Join("\r\n", _collectedData.Keys.Cast<string>().Select(k => k + ": " + _collectedData[k]).ToArray());
-            this.AcceptButton = btnYes;
-            this.CancelButton = btnNo;
+            tbReport.Text = string.Join("\r\n",
+                _collectedData.Keys.Cast<string>().Select(k => k + ": " + _collectedData[k]).ToArray());
+            AcceptButton = btnYes;
+            CancelButton = btnNo;
 
             if (Debugger.IsAttached)
                 Debugger.Break();
@@ -83,7 +86,8 @@ namespace MsCommon.ClickOnce
                 lblStatus.Invoke((Action<Color, string>)UpdateStatus, c, status);
                 return;
             }
-            lblStatus.Font = new Font(Label.DefaultFont, FontStyle.Bold);
+
+            lblStatus.Font = new Font(DefaultFont, FontStyle.Bold);
             lblStatus.ForeColor = c;
             lblStatus.Text = status;
         }

@@ -1,11 +1,11 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+
+#endregion
 
 namespace MsCommon.ClickOnce.Extensions
 {
@@ -13,9 +13,14 @@ namespace MsCommon.ClickOnce.Extensions
     {
         #region Busy & ControlState
 
-        private static ConcurrentDictionary<Control, ConcurrentDictionary<Control, bool>> controlEnabledState = new ConcurrentDictionary<Control, ConcurrentDictionary<Control, bool>>();
-        private static ConcurrentDictionary<Control, bool> controlBusyState = new ConcurrentDictionary<Control, bool>();
-        private static ConcurrentDictionary<Control, int> controlBusyCount = new ConcurrentDictionary<Control, int>();
+        private static readonly ConcurrentDictionary<Control, ConcurrentDictionary<Control, bool>> controlEnabledState =
+            new ConcurrentDictionary<Control, ConcurrentDictionary<Control, bool>>();
+
+        private static readonly ConcurrentDictionary<Control, bool> controlBusyState =
+            new ConcurrentDictionary<Control, bool>();
+
+        private static readonly ConcurrentDictionary<Control, int> controlBusyCount =
+            new ConcurrentDictionary<Control, int>();
 
         private static T Get<T>(ConcurrentDictionary<Control, T> dict, Control control, T defaultValue)
         {
@@ -150,7 +155,8 @@ namespace MsCommon.ClickOnce.Extensions
         {
             if (control is Form)
                 return;
-            if (control.Parent != null && !control.Parent.Enabled) // No need to store disable if the parent is already disabled
+            if (control.Parent != null &&
+                !control.Parent.Enabled) // No need to store disable if the parent is already disabled
                 return;
             SetControlStateInternal(parent, control, control.Enabled);
             if (control.Tag is string && (string)control.Tag == "KEEP_ENABLED")
@@ -158,6 +164,7 @@ namespace MsCommon.ClickOnce.Extensions
                 SetControlStateInternal(parent, control, true);
                 return;
             }
+
             control.Enabled = false;
             if (control is DataGridView)
             {

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region
+
+using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
+#endregion
 
 namespace MsCommon.ClickOnce.Extensions
 {
@@ -22,14 +22,15 @@ namespace MsCommon.ClickOnce.Extensions
                 if (field != null)
                 {
                     DescriptionAttribute attr =
-                           Attribute.GetCustomAttribute(field,
-                             typeof(DescriptionAttribute)) as DescriptionAttribute;
+                        Attribute.GetCustomAttribute(field,
+                            typeof(DescriptionAttribute)) as DescriptionAttribute;
                     if (attr != null)
                     {
                         return attr.Description;
                     }
                 }
             }
+
             return value.ToString();
         }
     }

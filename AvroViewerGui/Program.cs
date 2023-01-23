@@ -1,24 +1,18 @@
-﻿using log4net;
+﻿#region
+
+using System;
+using System.Windows.Forms;
+using log4net;
 using log4net.Config;
 using MsCommon.ClickOnce;
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Newtonsoft.Json;
-using AppDomain = System.AppDomain;
+
+#endregion
 
 namespace AvroViewerGui
 {
     static class Program
     {
-        private static ILog Logger = LogManager.GetLogger(typeof(Program));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(Program));
 
         /// <summary>
         /// The main entry point for the application.
@@ -26,7 +20,7 @@ namespace AvroViewerGui
         [STAThread]
         static void Main(string[] arguments)
         {
-            Action<string[]> method = (args) =>
+            Action<string[]> method = args =>
             {
                 XmlConfigurator.Configure();
                 Logger.Info("Starting...");

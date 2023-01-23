@@ -1,8 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Xml.Serialization;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -14,6 +18,7 @@ namespace MsCommon.ClickOnce
         private static Random random = new Random();
 
         private static T _instance;
+
         public static T Instance
         {
             get
@@ -29,12 +34,14 @@ namespace MsCommon.ClickOnce
             if (configPath != null)
                 return configPath;
 
-            string[] locations = new string[]
+            string[] locations =
             {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create), AppVersion.AppName + ".xml"),
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
+                        Environment.SpecialFolderOption.Create), AppVersion.AppName + ".xml"),
                 Path.Combine(Path.GetTempPath(), AppVersion.AppName + ".xml")
             };
-            
+
             // See if we already have a config file
             string path = locations.Where(l => File.Exists(l)).FirstOrDefault();
             if (path != null)
@@ -51,7 +58,9 @@ namespace MsCommon.ClickOnce
                 return configPath;
             }
 
-            throw new ApplicationException("Cannot find a directory in which to save the configuration file. Attempted directories: " + string.Join(", ", locations));
+            throw new ApplicationException(
+                "Cannot find a directory in which to save the configuration file. Attempted directories: " +
+                string.Join(", ", locations));
         }
 
         private static bool HasWriteAccessToDir(string dirname)
@@ -93,6 +102,7 @@ namespace MsCommon.ClickOnce
                     // loading failed, start anew
                 }
             }
+
             return new T();
         }
 
@@ -115,6 +125,7 @@ namespace MsCommon.ClickOnce
                     Thread.Sleep(random.Next(50, 150));
                     continue;
                 }
+
                 break;
             }
         }

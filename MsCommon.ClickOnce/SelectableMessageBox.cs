@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Specialized;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Net;
-using System.Text;
+﻿#region
+
+using System;
 using System.Windows.Forms;
+
+#endregion
 
 namespace MsCommon.ClickOnce
 {
@@ -35,7 +32,7 @@ namespace MsCommon.ClickOnce
         {
             var box = new SelectableMessageBox
             {
-                tbMessage = {Text = text},
+                tbMessage = { Text = text },
                 Text = caption,
                 Owner = owner
             };
